@@ -61,6 +61,7 @@ public class ClienteService {
 		}		
 		
 		Cliente novoCliente = new Cliente (cpf, nome, dataNascimento, endereco);
+		novoCliente.setTipo(tipo);
 		clienteDAO.salvarCliente(novoCliente);
 		System.out.println("Cliente cadastrado com sucesso!");
 	}
@@ -82,7 +83,7 @@ public class ClienteService {
 		}
 		
 	//ENCONTRAR POR CPF
-		private Cliente encontrarClientePorCPF(String cpf) {
+		public Cliente encontrarClientePorCPF(String cpf) {
 			for (Cliente cliente : clienteDAO.getListaDeClientes()) {
 				if (cliente.getCpf().equals(cpf)) {
 					return cliente;

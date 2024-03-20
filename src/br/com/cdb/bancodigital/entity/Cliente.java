@@ -7,6 +7,8 @@ public class Cliente {
 	private String dataNascimento;
 	private String endereco;
 	private TipoCliente tipo;
+	private boolean seguroViagemContratado;
+	private Conta conta;
 	
 	//ENUM TIPOS DE CLIENTE
 	public enum TipoCliente{
@@ -58,6 +60,22 @@ public class Cliente {
 	@Override
 	public String toString() {
 		return "CPF: " + cpf + "\nNome: " + nome + "\nData de Nascimento: " + dataNascimento + "\nEndereço: " + endereco + "\nCategoria: " + tipo;
+	}
+
+	public boolean isSeguroViagemContratado() {
+		return seguroViagemContratado;
+	}
+
+	public void setSeguroViagemContratado(boolean seguroViagemContratado) {
+		this.seguroViagemContratado = seguroViagemContratado;
+	}
+
+	public Conta getConta() {
+		return conta;
+	}
+
+	public void setConta(Conta conta) {
+		this.conta = conta;
 	}
 	
 	
