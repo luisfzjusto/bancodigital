@@ -170,6 +170,10 @@ public class CartaoCredito implements Cartao{
 	
 		
 	}
+	
+	public void setAtivo(boolean ativo) {
+		this.ativo = ativo;
+	}
 		
 }
 

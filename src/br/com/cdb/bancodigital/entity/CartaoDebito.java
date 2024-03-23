@@ -133,6 +133,11 @@ public class CartaoDebito implements Cartao{
 	public void setLimiteDiario(double novoLimite) {
 		this.limiteDiario = novoLimite;		
 	}
+	
+	public void setAtivo(boolean ativo) {
+		this.ativo = ativo;
+	}
+	
 }
 	
 

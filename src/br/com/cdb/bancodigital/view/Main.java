@@ -14,7 +14,7 @@ import br.com.cdb.bancodigital.service.ContaService;
 import br.com.cdb.bancodigital.dao.ContaDAO;
 import br.com.cdb.bancodigital.entity.CartaoCredito;
 import br.com.cdb.bancodigital.entity.CartaoDebito;
-
+import br.com.cdb.bancodigital.entity.Cartao;
 import java.util.Scanner;
 
 public class Main {
@@ -44,26 +44,29 @@ public class Main {
 			System.out.println();
 			System.out.println("DIGITE A OPÇÃO DESEJADA:");
 			System.out.println();
-			System.out.println("1 - Cadastrar novo cliente");
-			System.out.println("2 - Listar clientes cadastrados");
-			System.out.println("3 - Cadastrar conta corrente");
-			System.out.println("4 - Cadastrar conta poupança");
+			System.out.println("1 - Cadastrar Novo Cliente");
+			System.out.println("2 - Listar Clientes Cadastrados");
+			System.out.println("3 - Cadastrar Conta Corrente");
+			System.out.println("4 - Cadastrar Conta Poupança");
 			System.out.println("5 - Depositar");
 			System.out.println("6 - Transferir");
 			System.out.println("7 - Sacar");
-			System.out.println("8 - Exibir saldo");
-			System.out.println("9 - Exibir extrato");
-			System.out.println("10 - Exibir dados da conta");
-			System.out.println("11 - Emitir cartão de crédito");
-			System.out.println("12 - Emitir cartão de débito");
-			System.out.println("13 - Pagamentos com cartão de crédito");
-			System.out.println("14 - Exibir fatura do cartão de crédito");
-			System.out.println("15 - Pagamentos com cartão de débito");
-			System.out.println("16 - Alterar limite diário do cartão de débito");
-			System.out.println("17 - Contratar Seguro Viagem");			
-			System.out.println("18 - Emissão de Apólice de Seguro Viagem");
-			System.out.println("19 - Emissão de Apólice de Seguro Fraude");
-			System.out.println("20 - Sair");
+			System.out.println("8 - Exibir Saldo");
+			System.out.println("9 - Exibir Extrato");
+			System.out.println("10 - Exibir Dados da Conta");
+			System.out.println("11 - Emitir Cartão de Crédito");
+			System.out.println("12 - Emitir Cartão de Débito");
+			System.out.println("13 - Alteração de Senha de Cartões");
+			System.out.println("14 - Pagamentos com Cartão de Crédito");
+			System.out.println("15 - Exibir Fatura do Cartão de Crédito");
+			System.out.println("16 - Pagamentos com Cartão de Débito");
+			System.out.println("17 - Alterar Limite Diário do Cartão de Débito");
+			System.out.println("18 - Contratar Seguro Viagem");			
+			System.out.println("19 - Emissão de Apólice de Seguro Viagem");
+			System.out.println("20 - Emissão de Apólice de Seguro Fraude");
+			System.out.println("21 - Desativar Cartão");
+			System.out.println("22 - Reativar Cartão");
+			System.out.println("23 - Sair");
 			opcao = scanner.nextInt();
 			
 			switch (opcao) {
@@ -104,33 +107,42 @@ public class Main {
 					emitirCartaoDebito();
 				break;
 				case 13:
+					alterarSenhaCartao();
+				break;
+				case 14:
 					realizarPagamentoCartaoCredito();
 					break;
-				case 14:
+				case 15:
 					exibirFaturaAtual();
 					break;
-				case 15:
+				case 16:
 					realizarPagamentoCartaoDebito();
 					break;
-				case 16:
+				case 17:
 					alterarLimiteDiarioCartaoDebito();
 					break;
-				case 17:
+				case 18:
 					contratarSeguroViagem();
 					break;
-				case 18:
+				case 19:
 					exibirApoliceViagem();
 					break;
-				case 19:
+				case 20:
 					exibirApoliceFraude();
 					break;
-				case 20:
+				case 21:
+					desativarCartao();
+					break;
+				case 22:
+					ativarCartao();
+					break;
+				case 23:
 					System.out.println("Sessão encerrada. O CDBANK agradece sua visita.");
 					break;
 				default:
 					System.out.println("Opção inválida. Por favor, escolha novamente a opção desejada:");
 			}
-		} while (opcao != 20);
+		} while (opcao != 23);
 	}
 	
 	private static void cadastrarCliente() {
@@ -592,7 +604,144 @@ public class Main {
 		cartaoDebito.setLimiteDiario(novoLimite);
 		System.out.println("Limite diário do cartão de débito alterado para R$ " + novoLimite);
 	}
-	    
+	
+	private static void alterarSenhaCartao() {
+		scanner.nextLine();
+		System.out.println("Você selecionou alteração de senha de cartões.");
+		System.out.println("Por favor, digite o número da conta:");
+		String numeroConta = scanner.nextLine();
+		
+		Conta conta = contaService.buscarContaPorNumero(numeroConta);
+		
+		if(conta == null) {
+			System.out.println("A conta informada não foi encontrada.");
+			return;
+		}
+		
+		CartaoCredito cartaoCredito = conta.getCartaoCredito();
+		CartaoDebito cartaoDebito = conta.getCartaoDebito();
+		
+		if(cartaoCredito == null && cartaoDebito == null) {
+			System.out.println("A conta informada não possui cartão vinculado.");
+			return;
+		}
+		
+		if(cartaoCredito != null && cartaoDebito != null) {
+			System.out.println("Informe o cartão que terá a senha alterada:");
+			System.out.println("1 - Cartão de crédito");
+			System.out.println("2 - Cartão de débito");
+			int opcao = scanner.nextInt();
+			
+			if(opcao ==1) {
+				alterarSenhaCartaoCredito(cartaoCredito);
+			} else if(opcao ==2) {
+				alterarSenhaCartaoDebito(cartaoDebito);
+			} else {
+				System.out.println("Opção inválida.");
+			}
+	
+		} else if(cartaoCredito != null) {
+			alterarSenhaCartaoCredito(cartaoCredito);
+		} else if(cartaoDebito != null) {
+			alterarSenhaCartaoDebito(cartaoDebito);
+		}		
+	}
+	
+	private static void alterarSenhaCartaoCredito(CartaoCredito cartaoCredito) {
+		scanner.nextLine();
+		System.out.println("Por favor, digite a nova senha com 6 números:");
+		String novaSenha = scanner.nextLine();
+		cartaoCredito.setSenha(novaSenha);
+		System.out.println("Senha alterada com sucesso.");
+	}
+	
+	private static void alterarSenhaCartaoDebito(CartaoDebito cartaoDebito) {
+		scanner.nextLine();
+		System.out.println("Por favor, digite a nova senha com 6 números:");
+		String novaSenha = scanner.nextLine();
+		cartaoDebito.setSenha(novaSenha);
+		System.out.println("Senha alterada com sucesso.");
+	}
+	
+	private static void desativarCartao() {
+		scanner.nextLine();
+		System.out.println("Você selecionou desativar cartão.");
+		System.out.println("Por favor, digite o número da conta:");
+		String numeroConta = scanner.nextLine();
+		
+		Conta conta = contaService.buscarContaPorNumero(numeroConta);
+		
+		if(conta == null) {
+			System.out.println("A conta informada não foi localizada.");
+			return;
+		}
+		
+		System.out.println("Por favor, selecione o cartão que deseja desativar:");
+		System.out.println("1 - Cartão de Crédito");
+		System.out.println("2 - Cartão de Débito");
+		int opcao = scanner.nextInt();
+		
+		if(opcao == 1) {
+			CartaoCredito cartaoCredito = conta.getCartaoCredito();
+			if(cartaoCredito == null) {
+				System.out.println("A conta informada não possui cartão de crédito vinculado.");
+				return;
+			}
+			cartaoCredito.setAtivo(false);
+			System.out.println("Cartão de crédito desativado com sucesso.");
+		} else if(opcao == 2) {
+			CartaoDebito cartaoDebito = conta.getCartaoDebito();
+			if(cartaoDebito == null) {
+				System.out.println("A conta informada não possui cartão de débito vinculado.");
+				return;
+			}
+			cartaoDebito.setAtivo(false);
+			System.out.println("Cartão de débito desativado com sucesso.");
+		} else {
+			System.out.println("Opção inválida.");
+		}
+	}
+	
+	
+	private static void ativarCartao() {
+		scanner.nextLine();
+		System.out.println("Você selecionou ativar cartão");
+		System.out.println("Por favor, digite o número da conta:");
+		String numeroConta = scanner.nextLine();
+		
+		Conta conta = contaService.buscarContaPorNumero(numeroConta);
+		
+		if(conta == null) {
+			System.out.println("A conta informada não foi localizada.");
+			return;
+		}
+		
+		System.out.println("Por favor, selecione o cartão que deseja ativar:");
+		System.out.println("1 - Cartão de Crédito");
+		System.out.println("2 - cartão de Débito");
+		int opcao = scanner.nextInt();
+		
+		if (opcao == 1) {
+			CartaoCredito cartaoCredito = conta.getCartaoCredito();
+			if(cartaoCredito == null) {
+				System.out.println("A conta informada não possui cartão de crédito vinculado.");
+				return;
+			}
+			cartaoCredito.setAtivo(true);
+			System.out.println("Cartão de crédito ativado com sucesso.");
+		} else if(opcao == 2) {
+			CartaoDebito cartaoDebito = conta.getCartaoDebito();
+			if(cartaoDebito == null) {
+				System.out.println("A conta informada não possui cartão de débito vinculado.");
+				return;
+			}
+			cartaoDebito.setAtivo(true);
+			System.out.println("Cartão de débito ativado com sucesso.");
+		} else {
+			System.out.println("Opção inválida.");
+		}
+	}
+	
 }
 	
 	
