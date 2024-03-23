@@ -56,10 +56,14 @@ public class Main {
 			System.out.println("10 - Exibir dados da conta");
 			System.out.println("11 - Emitir cartão de crédito");
 			System.out.println("12 - Emitir cartão de débito");
-			System.out.println("13 - Contratar Seguro Viagem");			
-			System.out.println("14 - Emissão de Apólice de Seguro Viagem");
-			System.out.println("15 - Emissão de Apólice de Seguro Fraude");
-			System.out.println("16 - Sair");
+			System.out.println("13 - Pagamentos com cartão de crédito");
+			System.out.println("14 - Exibir fatura do cartão de crédito");
+			System.out.println("15 - Pagamentos com cartão de débito");
+			System.out.println("16 - Alterar limite diário do cartão de débito");
+			System.out.println("17 - Contratar Seguro Viagem");			
+			System.out.println("18 - Emissão de Apólice de Seguro Viagem");
+			System.out.println("19 - Emissão de Apólice de Seguro Fraude");
+			System.out.println("20 - Sair");
 			opcao = scanner.nextInt();
 			
 			switch (opcao) {
@@ -100,20 +104,33 @@ public class Main {
 					emitirCartaoDebito();
 				break;
 				case 13:
-					contratarSeguroViagem();
+					realizarPagamentoCartaoCredito();
 					break;
 				case 14:
-					exibirApoliceViagem();
+					exibirFaturaAtual();
 					break;
 				case 15:
-					exibirApoliceFraude();
+					realizarPagamentoCartaoDebito();
+					break;
 				case 16:
+					alterarLimiteDiarioCartaoDebito();
+					break;
+				case 17:
+					contratarSeguroViagem();
+					break;
+				case 18:
+					exibirApoliceViagem();
+					break;
+				case 19:
+					exibirApoliceFraude();
+					break;
+				case 20:
 					System.out.println("Sessão encerrada. O CDBANK agradece sua visita.");
 					break;
 				default:
 					System.out.println("Opção inválida. Por favor, escolha novamente a opção desejada:");
 			}
-		} while (opcao != 16);
+		} while (opcao != 20);
 	}
 	
 	private static void cadastrarCliente() {
@@ -358,6 +375,11 @@ public class Main {
 	        return;
 	    }
 	    
+	    if(titular.getTipo() != TipoCliente.PREMIUM && !titular.isSeguroViagemContratado()) {
+	    	System.out.println("O cliente informado não contratou esse serviço.");
+	    	return;
+	    }
+	    
 	    SeguroViagem seguroViagem = new SeguroViagem();
 	    String detalhesApoliceViagem = seguroViagem.gerarApolice(titular, cartaoCredito);
 	    System.out.println(detalhesApoliceViagem);
@@ -402,7 +424,7 @@ public class Main {
 	    String numeroConta = scanner.nextLine();
 	    
 	    Conta conta = contaService.buscarContaPorNumero(numeroConta);
-	    
+	    	    
 	    if (conta == null) {
 	        System.out.println("A conta informada não foi encontrada.");
 	        return;
@@ -450,6 +472,125 @@ public class Main {
 			System.out.println("Saldo insuficiente para contratação do seguro");
 			return false;
 		}
+	}
+	
+	private static void realizarPagamentoCartaoCredito() {
+		scanner.nextLine();
+		System.out.println("Você selecionou pagamentos com cartão de crédito.");
+		System.out.println("Por favor, digite o número da conta");
+		String numeroConta = scanner.nextLine();
+		
+		Conta conta = contaService.buscarContaPorNumero(numeroConta);
+		
+		if (conta == null) {
+			System.out.println("A conta informada não foi encontrada");
+			return;
+		}
+		
+		CartaoCredito cartaoCredito = conta.getCartaoCredito();
+		
+		if (cartaoCredito == null || !cartaoCredito.isAtivo()) {
+			System.out.println("Essa conta não possui um cartão de crédito ativo.");
+			return;
+		}
+		
+		System.out.println("Por favor, digite o valor do pagamento:");
+		double valor = scanner.nextDouble();
+		
+		boolean pagamentoRealizado = contaService.realizarPagamentoCartaoCredito(cartaoCredito, valor);
+		if(pagamentoRealizado) {
+			System.out.println("Pagamento realizado com sucesso.");
+		} else {
+			System.out.println("Pagamento não realizado. Limite do cartão excedido ou cartão desativado.");
+		}		
+		
+	}
+	
+	private static void exibirFaturaAtual() {
+		scanner.nextLine();
+		System.out.println("Você selecionou exibir fatura do cartão de crédito");
+		System.out.println("Por favor, digite o número da conta:");
+		String numeroConta = scanner.nextLine();
+		
+		Conta conta = contaService.buscarContaPorNumero(numeroConta);
+		
+		if (conta == null) {
+			System.out.println("A conta informada não foi encontrada.");
+			return;
+		}
+		
+		CartaoCredito cartaoCredito = conta.getCartaoCredito();
+		
+		if (cartaoCredito == null || !cartaoCredito.isAtivo()) {
+			System.out.println("Essa conta não possui cartão de crédito ativo");
+			return;
+		}
+		
+		double faturaAtual = cartaoCredito.getFaturaAtual();
+		double taxaUso = 	cartaoCredito.calcularTaxaUso();
+		double faturaTotal = faturaAtual + taxaUso;
+		
+		System.out.println("Fatura atual: R$ " + faturaAtual);
+		System.out.println("Taxa de uso: R$ " + taxaUso);
+		System.out.println("Total da Fatura: R$ " + faturaTotal);
+	}
+	
+	private static void realizarPagamentoCartaoDebito() {
+		scanner.nextLine();
+		System.out.println("Você selecionou pagamento com cartão de débito");
+		System.out.println("Por favor, digite o número da conta");
+		String numeroConta = scanner.nextLine();
+		
+		Conta conta = contaService.buscarContaPorNumero(numeroConta);
+		
+		if (conta == null) {
+			System.out.println("A conta informada não foi localizada");
+			return;
+		}
+		
+		CartaoDebito cartaoDebito = conta.getCartaoDebito();
+		
+		if (cartaoDebito == null || !cartaoDebito.isAtivo()) {
+			System.out.println("Essa conta não possui um cartão de débito ativo");
+			return;
+		}
+		
+		System.out.println("Por favor, informe o valor do pagamento:");
+		double valor = scanner.nextDouble();
+		
+		boolean pagamentoRealizado = contaService.realizarPagamentoCartaoDebito(cartaoDebito, valor);
+		if(pagamentoRealizado) {
+			System.out.println("Pagamento realizado com sucesso.");
+		} else {
+			System.out.println("Pagamento não realizado. Limite diário do cartão excedido ou cartão desativado.");
+		}
+	}
+	
+	private static void alterarLimiteDiarioCartaoDebito() {
+		scanner.nextLine();
+		System.out.println("Você selecionou alterar o limite diário do cartão de débito.");
+		System.out.println("Por favor, digite o número da conta:");
+		String numeroConta = scanner.nextLine();
+		
+		Conta conta = contaService.buscarContaPorNumero(numeroConta);
+		
+		if(conta == null) {
+			System.out.println("Conta informada não foi localizada.");
+			return;
+		}
+		
+		CartaoDebito cartaoDebito = conta.getCartaoDebito();
+		
+		if(cartaoDebito == null) {
+			System.out.println("Essa conta não possui um cartão de débito vinculado.");
+			return;
+		}
+		
+		System.out.println("Por favor, digite o limite diário desejado:");
+		double novoLimite = scanner.nextDouble();
+		
+		cartaoDebito.setLimiteDiario(novoLimite);
+		System.out.println("Limite diário do cartão de débito alterado para R$ " + novoLimite);
 	}
 	    
 }

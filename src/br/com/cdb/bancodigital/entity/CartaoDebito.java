@@ -13,23 +13,37 @@ public class CartaoDebito implements Cartao{
 	private double limiteDiario;
 	private boolean ativo;
 	private String senha;
-	private String numeroCartao = gerarNumeroCartao();
+	private String numeroCartao;
+	private double novoLimite;
 	
-	public CartaoDebito(String numeroCartao, Conta conta, double limiteDiario) {
+	public CartaoDebito(String numeroCartao, Conta conta) {
 		this.conta = conta;
-		this.limiteDiario = limiteDiario;
+		this.limiteDiario = 1000.0;
+		this.numeroCartao = gerarNumeroCartao();
 		this.ativo = true;
-		this.senha = "";
 	}
 	
 	@Override
 	public void realizarPagamento(double valor) {
-		if (ativo && valor <= limiteDiario) {
-			conta.sacar(valor);
-			System.out.println("Pagamento de R$ " + valor + "realizado com sucesso.");
-		} else {
-			System.out.println("Pagamento não autorizado. Limite diário excedido ou cartão desativado.");
+		if(!ativo) {
+			System.out.println("Cartão de débito desativado.");
+			return;
 		}
+		
+		if (valor > limiteDiario) {
+			System.out.println("Transação não realizada. Valor superior ao limite diário.");
+			return;
+		} 
+		
+		if (valor > conta.getSaldo()) {
+			System.out.println("Transação não realizada. Saldo insuficiente.");
+			return;
+		}
+		
+		conta.sacar(valor);
+		System.out.println("Pagamento de R$ " + valor + "realizada via cartão de débito.");
+		
+				
 	}
 
 	@Override
@@ -78,7 +92,7 @@ public class CartaoDebito implements Cartao{
 
 	@Override
 	public void ajustarLimite(double novoLimite) {
-		limiteDiario = novoLimite;
+		this.limiteDiario = novoLimite;
 		System.out.println("Limite do cartão alterado para R$ " + novoLimite + ".");		
 	}
 	
@@ -94,6 +108,10 @@ public class CartaoDebito implements Cartao{
         return senha;
     }
     
+    public boolean isAtivo() {
+	    return ativo;
+	}
+    
     private final String gerarNumeroCartao() {
 		Random random = new Random();
 		StringBuilder sb = new StringBuilder();
@@ -106,6 +124,14 @@ public class CartaoDebito implements Cartao{
 	@Override
 	public Conta getConta() {
 		return conta;
+	}
+	
+	public double getLimiteDiario() {
+		return limiteDiario;
+	}
+	
+	public void setLimiteDiario(double novoLimite) {
+		this.limiteDiario = novoLimite;		
 	}
 }
 	

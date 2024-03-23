@@ -20,9 +20,9 @@ public class ContaPoupanca implements Conta {
 	
 	private LocalDate dataCriacaoConta;
 	private LocalDate dataUltimoCredito;
-	private static final double taxaRendimentoComum = 0.1;
-	private static final double taxaRendimentoSuper = 0.15;
-	private static final double taxaRendimentoPremium = 0.20;
+	private static final double taxaRendimentoComum = 0.005;
+	private static final double taxaRendimentoSuper = 0.007;
+	private static final double taxaRendimentoPremium = 0.009;
 	private String numeroConta;
 	private Cliente titular;
 	private double saldo;
@@ -35,6 +35,7 @@ public class ContaPoupanca implements Conta {
 		this.dataCriacaoConta = LocalDate.now();
 		this.extrato = new ArrayList<>();
 		registrarTransacao("Depósito inicial: R$ " + saldoInicial);
+		adicionarRendimentoDiario();
 		
 	}
 	
@@ -68,14 +69,24 @@ public class ContaPoupanca implements Conta {
 				registrarTransacao("Transferência de R$ " + valor);
 				System.out.println("Transação efetuada com sucesso.");
 				System.out.println();
+			} else if (destino instanceof ContaPoupanca) {
+				this.sacar(valor);
+				destino.depositar(valor);
+				registrarTransacao("Transferência de R$ " + valor);
+				System.out.println("Transação efetuada com sucesso.");
+				System.out.println();
 			} else {
 				System.out.println("Transação não efetuada. Conta de destino inválida");
 			}
 		} else {
-			System.out.println("Transação não realizada. Saldo Insuficiente.");
+			System.out.println("Transação não efetuada. Saldo insuficiente.");
 		}
 		
+		
 	}
+		
+		
+	
 
 	@Override
 	public void sacar(double valor) {
@@ -106,31 +117,21 @@ public class ContaPoupanca implements Conta {
 		
 	}
 	
-	public void calcularRendimentoMensal() {
-		LocalDate hoje = LocalDate.now();
-		if (dataUltimoCredito == null || hoje.minusDays(30).isAfter(dataUltimoCredito)) {
-			aplicarRendimento();
-		}
-	}
-	
-	private void aplicarRendimento() {
-		double taxaRendimento = calcularTaxaRendimento();
-		
-		double rendimento = saldo * Math.pow(1 + taxaRendimento, 1.0 / 12) - saldo;
-		saldo += rendimento;
-		dataUltimoCredito = LocalDate.now();
+	private void adicionarRendimentoDiario() {
+		double rendimentoDiario = (saldo * calcularTaxaRendimento()) / 30;		
+		saldo += rendimentoDiario;
+		registrarTransacao("Rendimento diário: " + rendimentoDiario);
 	}
 	
 	private double calcularTaxaRendimento() {
-		double taxaRendimentoAno = 0.0;
+		double taxaRendimentoMensal = 0.0;
 		if (getTitular().getTipo() == TipoCliente.COMUM) {
-			taxaRendimentoAno = taxaRendimentoComum;
+			taxaRendimentoMensal = taxaRendimentoComum;
 		} else if (getTitular().getTipo() == TipoCliente.SUPER) {
-			taxaRendimentoAno = taxaRendimentoSuper;
+			taxaRendimentoMensal = taxaRendimentoSuper;
 		} else if (getTitular().getTipo() == TipoCliente.PREMIUM) {
-			taxaRendimentoAno = taxaRendimentoPremium;
+			taxaRendimentoMensal = taxaRendimentoPremium;
 		}
-		double taxaRendimentoMensal = taxaRendimentoAno / 12;
 		return taxaRendimentoMensal;
 	}
 	

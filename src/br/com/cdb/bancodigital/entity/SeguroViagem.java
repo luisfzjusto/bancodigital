@@ -1,6 +1,13 @@
 package br.com.cdb.bancodigital.entity;
 
 import br.com.cdb.bancodigital.entity.Cliente.TipoCliente;
+import br.com.cdb.bancodigital.entity.Conta;
+import br.com.cdb.bancodigital.entity.CartaoCredito;
+import br.com.cdb.bancodigital.entity.CartaoDebito;
+import br.com.cdb.bancodigital.dao.ContaDAO;
+import br.com.cdb.bancodigital.entity.ContaCorrente;
+import br.com.cdb.bancodigital.entity.ContaPoupanca;
+import br.com.cdb.bancodigital.entity.Cliente;
 
 public class SeguroViagem implements Seguro {
 

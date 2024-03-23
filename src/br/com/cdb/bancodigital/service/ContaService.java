@@ -55,6 +55,7 @@ public class ContaService {
 
 	public ContaCorrente criarContaCorrente(String cpf, Cliente titular, double saldoInicial) {
 		ContaCorrente conta = new ContaCorrente(cpf, titular, saldoInicial);
+		titular.setConta(conta);
 		contaDAO.salvar(conta);
 		return conta;
 		
@@ -62,6 +63,7 @@ public class ContaService {
 	
 	public ContaPoupanca criarContaPoupanca(String cpf, Cliente titular, double saldoInicial) {
 		ContaPoupanca conta = new ContaPoupanca(cpf, titular, saldoInicial);
+		titular.setConta(conta);
 		contaDAO.salvar(conta);
 		return conta;
 		
@@ -88,8 +90,9 @@ public class ContaService {
 		
 		Cliente titular = conta.getTitular();
 		double limite;
+		TipoCliente tipoCliente = titular.getTipo();
 		
-		switch (titular.getTipo()) {
+		switch (tipoCliente) {
 			case COMUM:
 				limite = 1000.0;
 				break;
@@ -103,20 +106,15 @@ public class ContaService {
 				limite = 0.0;
 		}
 		
-		String numeroCartaoCredito = gerarNumeroCartao();
-		
-		Scanner input = new Scanner(System.in);
-		
-		CartaoCredito cartaoCredito = new CartaoCredito(numeroCartaoCredito, conta, limite);
+		CartaoCredito cartaoCredito = new CartaoCredito(conta, limite);
 		conta.setCartaoCredito(cartaoCredito);
 		
 		if(titular.getTipo() == TipoCliente.PREMIUM) {
 			cartaoCredito.setSeguro(new SeguroViagem());
 		} else {
-			cartaoCredito.setSeguro(new SeguroViagem());
+			cartaoCredito.setSeguro(new SeguroFraude());
 		}
-		cartaoCredito.setSeguro(new SeguroFraude());
-		
+				
 		return cartaoCredito;
 	}
 	
@@ -140,7 +138,7 @@ public class ContaService {
 		
 		Scanner input = new Scanner(System.in);
 		
-		CartaoDebito cartaoDebito = new CartaoDebito(numeroCartaoDebito, conta, limiteDiario);
+		CartaoDebito cartaoDebito = new CartaoDebito(numeroCartaoDebito, conta);
 		conta.setCartaoDebito(cartaoDebito);
 		
 		return cartaoDebito;
@@ -161,6 +159,7 @@ public class ContaService {
 		}
 		
 		cartaoCredito.aumentarFatura(valor);
+		System.out.println("Pagamento realizado com sucesso. Valor R$ " + valor);
 		return true;
 	}
 	
@@ -172,6 +171,40 @@ public class ContaService {
 		
 		cartaoCredito.setSenha(novaSenha);
 		System.out.println("Senha alterada com sucesso.");
+	}
+	
+	public boolean realizarPagamentoCartaoDebito(CartaoDebito cartaoDebito, double valor) {
+		if(cartaoDebito == null) {
+			System.out.println("Cartão de débito não encontrado.");
+			return false;
+		}
+		
+		Conta conta = cartaoDebito.getConta();
+		
+		if(conta == null) {
+			System.out.println("Conta associada ao cartão de débito não encontrada.");
+			return false;
+		}
+		
+		if(!cartaoDebito.isAtivo()) {
+			System.out.println("Cartão de débito desativado.");
+			return false;
+		}
+		
+		if (valor > conta.getSaldo()) {
+			System.out.println("Transação não realizada. Saldo insuficiente.");
+			return false;
+		}
+		
+		if(valor > cartaoDebito.getLimiteDiario()) {
+			System.out.println("Transação não efetuada. Valor superior ao limite diário.");
+			return false;
+		}
+		
+		cartaoDebito.realizarPagamento(valor);
+		System.out.println("Pagamento de R$ " + valor + " realizado com sucesso via cartão de débito");
+		return true;
+		
 	}
 	
 		
