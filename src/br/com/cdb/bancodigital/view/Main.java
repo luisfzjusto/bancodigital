@@ -156,9 +156,20 @@ public class Main {
 		String dataNascimento = scanner.nextLine();
 		System.out.println("Por favor, digite o endereco completo (rua, número, complemento, cidade, estado, cep:");
 		String endereco = scanner.nextLine();
-		System.out.println("Por favor, informe a categoria do cliente: COMUM, SUPER, PREMIUM:");
-		String tipoString = scanner.nextLine();
-		TipoCliente tipo = TipoCliente.valueOf(tipoString.toUpperCase());
+		
+		TipoCliente tipo = null;
+		boolean tipoValido = false;
+		
+		do {
+			try {
+				System.out.println("Por favor, informe a categoria do cliente: COMUM, SUPER, PREMIUM:");
+				String tipoString = scanner.nextLine();
+				tipo = TipoCliente.valueOf(tipoString.toUpperCase());
+				tipoValido = true;
+			} catch (IllegalArgumentException e) {
+				System.out.println("Tipo de cliente inválido. Por favor, digite novamente.");
+			}
+		} while (!tipoValido);
 		
 		
 		clienteService.cadastrarCliente(cpf, nome, dataNascimento, endereco, tipo);
